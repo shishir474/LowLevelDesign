@@ -1,0 +1,59 @@
+Java Collections        (used to store values)
+    List Interface
+        implemented by
+        1. ArrayList
+        2. LinkedList
+        3. Stack
+        4. Vector
+
+    Queue Interface
+        implemented by
+        1. LinkedList
+        2. PriorityQueue
+        3. ArrayDeque
+
+    Set Interface
+        implemented by
+        1. EnumSet
+        2. HashSet
+        3. LinkedHashSet
+        4. TreeSet
+
+
+Map:    (used to store key,value pairs)
+    1. HashMap
+    2. TreeMap
+    3. EnumMap
+    4. LinkedHashMap
+    5. WeekHashMap
+
+
+
+
+
+ArrayList
+    Dynamic Array
+    insert element
+        .add()
+        .add(index)     to add at a specific index
+    Retrieve Element
+        .get(idx)
+    Remove Element O(n)
+        .remove(idx) -- removes the element at the specified index, shift the remaining elements towards left and returns the removed element
+        .remove(Object) -- removes one occurence of that object
+    clear()
+
+
+Stack
+    st.push()
+    st.pop()
+    st.peek()
+    st.size()
+    st.empty()
+
+Queue
+    offer() / add()     -- add element
+    peek() / element()  -- front element
+    poll() / remove()   -- remove element
+
+
