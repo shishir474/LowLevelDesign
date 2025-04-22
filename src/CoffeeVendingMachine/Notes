@@ -1,0 +1,110 @@
+Requirements:
+   1. The coffee Vending Machine should support different types of coffee like americano, espresso, latte etc
+   2. Each type of coffee should have a specific price and recipe(ingredients and quantities)
+   3. The vending machine should have a menu option to display the available coffee options and their prices
+   4. Users should be able to select a coffee type and make a payment
+   5. The machine should dispense the selected coffee
+   6. The machine should track the inventory of the ingredients and notify when they are running low
+   7. The machine should be able to handle multiple user's requests and ensure thread safety
+
+
+
+Classes
+    Coffee                              -- this class represents a coffee type with its name, price and recipe(ingredients and their quantities)
+        member variables
+           private final name     String
+           private final price    double
+           private final recipe   Map<Ingredient, Integer>                          -- Ingredient & its quantity required to make this coffee
+        Methods:
+            public String getName()
+            public double getPrice()
+            public Map<Ingredient,Integer> getRecipe()
+
+
+    Ingredients class               -- this class represents the ingredients used in making coffee, with its name & quantity
+        member variables:
+            private final name String                                               -- Ingredient's name and its available quantity
+            private quantity int
+        method:
+            public String getName()
+            public int getQuantity()
+            public void updateQuantity(int amount)
+
+
+    Payments class                   -- this class will handle the payment made by the user
+        private final amount double
+        public double getAmount()
+
+
+    CoffeeMachine class
+         Member Variables
+            private static final instance           CoffeeMachine 1 global instance
+            private final coffeeMenu     List<Coffee>
+            private ingredients     Map<String,Ingredient>                      -- <name, ingredient>
+
+        this is the main class that manages the coffee vending machine. It follows a singleton pattern to ensure a single instance of the vending machine
+        CoffeeMachine() {
+            initialiseIngredients()
+            initialiseCoffeeMenu()
+        }          -- initialise this class with ingredients and the menu option
+
+
+        public void displayMenu()                                               -- iterate over the coffeeMenu and print that list
+        public Coffee selectCoffee(String CoffeeName)                           -- iterate over the coffeeMenu and check which coffee has the user requestes
+        public Coffee dispenseCoffee(Coffee coffee, Payment payment)            -- check if sufficient balance, then check if the machine has enough ingredients, if both are satisfied, update the ingredients quantities and dispense the coffee and return the change
+        public void updateIngredientQuantities(Coffee coffee)                   -- updates the ingredients after dispensing the coffee. Iterate over the coffee's recipe, for each ingredient, update its quantity and issue alert if the quantity is reduced below the threshold value
+        public boolean hasEnoughIngredients(Coffee coffee)                      -- to check if we have sufficient ingredients to make a selected coffee
+
+    CoffeeVendingMachine class
+        This is Entry point of the application and demonstrates the usage of Coffee Vending Machine.It creates an instance of the machine, displays the menu, allows users to select a particular coffee, dispense the selected coffee after the payment is processed
+        and simulates concurrent user requests
+
+
+Integer vs int in JAVA
+    ✅ Which should you use?
+    Use int when                                Use Integer whenâ€¦
+    You don't expect nulls                         You might deal with null values
+    You want performance (no object overhead)       You're working heavily with collections like Map, List etc
+    You prefer primitive simplicity                 You need to pass null or detect missing data
+
+    int - A primitive data type
+    int x = 5;
+
+    Integer class
+    Integer y = 10;
+
+    Auto boxing and unboxing: Java automatically converts between int and Integer when needed:
+    int x = 10;
+    Integer y = x;    // 🔄 auto-boxing (int → Integer)
+
+    int z = y;        // 🔄 unboxing (Integer → int)
+
+    💡 In your case:
+
+    Since you’re doing this:
+    if (requiredQty > ingredient.getQuantity())
+    You’re using it as a number, and there’s no indication that requiredQty might be null.
+    So this is totally fine (and maybe slightly more efficient):
+    int requiredQty = entry.getValue(); // ✅
+    Java will unbox the Integer to int automatically.
+
+
+Which methods should be marked synchronized for thread safety
+    Your CoffeeMachine is a singleton (private static final instance) and maintains shared mutable state — like ingredient quantities — so thread safety is essential if multiple threads (or users) access the machine at the same time.
+    Let’s identify the critical sections — methods that read or modify shared data (ingredients, coffeeMenu) and must be protected from concurrent access.
+    ✅ Methods to Mark synchronized:
+
+    1. dispenseCoffee()
+    	•	Calls both hasEnoughIngredients() and updateIngredients()
+    	•	This is a critical operation: check + update
+    	•	Needs to be atomic (no interleaving between threads)
+
+    	public synchronized void dispenseCoffee(Coffee coffee, Payment payment)
+
+    	hasEnoughIngredients
+            since it is called internally from dispenseCoffee(), no need plus its only read only method
+
+        updateIngredients() Optional
+            no need here, since it is called from within the dispenseCoffee() function
+       	displayMenu() - no (read only method), so it's safe
+    	selectCoffee - no (read only method)
