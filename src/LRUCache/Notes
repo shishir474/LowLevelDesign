@@ -1,0 +1,10 @@
+Requirements:
+1. The LRU Cache should support the following operations
+    a. Put(key,value): insert a key, value pair into the cache. If the cache is at capacity, remove the least recently used item, before inserting the new item
+    b. Get(key): get the value associated with this key. If the key exists, move the key,value pair to the front of the cache(most recently used) and return its value.
+                If the key does not exist, return -1
+
+2. The cache will have a fixed capacity
+3. Ensure thread safety for concurrent access to cache by multiple threads
+4. Ensure that both put(key,value) and get(key) are efficient in terms of tc O(1)
+
