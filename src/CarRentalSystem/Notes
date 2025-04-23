@@ -1,0 +1,93 @@
+Requirement:
+1. The system should allow customers to browse and reserve available cars for specific dates
+2. The customer should be able to search cars based on various criteria like car type, price range and availability
+3. Each car should have details like make, model, license plate no, carType(suv,sedan etc) and rental price per day
+4. The system should handle reservations like creating, modifying or cancelling reservations
+5. The system should track the availability of the cars and update their status accordingly
+6. The system should handle customer's information including name, contact details, and driver's license information
+7. The system should handle payment for reservations.
+8. The system should be able to handle concurrent requests and ensure data consistency
+
+
+
+** Entities **
+
+Car
+    This class represents cars in the rental system, with properties like make, model, rental price, availability status, license plate no
+
+Customer
+    This class represents customers, with properties like name, contact details, driver's license number
+
+Reservation
+     This class represents a reservation made by a customer for a specific car type and date range. It includes properties such as reservationId, customer, car, date range(startDate, endDate) and total price
+
+PaymentProcessor (Interface)
+    Below two classes provide the concrete implementation of the PaymentProcessor Interface
+        a. CreditCardPaymentProcessor
+        b. PaypalPaymentProcessor
+
+RentalSystem
+    This class is the core of the car rental system. Follows Singleton pattern to ensure a single instance of the rental system.
+    This class provides methods for adding and removing cars, searching cars based on certain criteria, handing reservations(creating/modifying/cancelling) and processing payments
+
+RentalSystemDemo
+    This class serves as the entry point of your application and demonstrates the usage of car rental system
+
+
+
+
+HashMap vs Concurrent Hashmaps in Java
+    Understanding the difference between HashMap and ConcurrentHashMap is super important when you’re dealing with multi-threaded Java applications.
+    Features                                     Hashmap                        ConcurrentHashmap
+    Thread-safe?                                    No                      Yes (designed for concurrent access)
+    Allows null keys/values?              1 null key, multiple null values  No null keys or values
+    Performance (single-threaded)                  Fast                     Slightly slower (due to locking)
+    Use in multi-threading?               Causes issues (race conditions)   Safe and efficient
+    Locking mechanism                               N/A                     Uses internal fine-grained locking (segments or buckets)
+
+
+    🔧 1. HashMap – Non-thread-safe
+
+    Code Example (Unsafe):
+
+    Map<String, String> map = new HashMap<>();
+
+    Thread t1 = new Thread(() -> map.put("A", "Apple"));
+
+    Thread t2 = new Thread(() -> map.put("B", "Banana"));
+
+    t1.start();
+    t2.start();
+
+    	•	❌ This may cause race conditions.
+    	•	❌ The map can become corrupted if modified by multiple threads at the same time.
+
+    🛡 2. ConcurrentHashMap – Thread-safe
+
+    Code Example (Safe):
+    Map<String, String> cmap = new ConcurrentHashMap<>();
+
+    Thread t1 = new Thread(() -> cmap.put("A", "Apple"));
+    Thread t2 = new Thread(() -> cmap.put("B", "Banana"));
+
+    t1.start();
+    t2.start();
+
+    •	✅ Safe for concurrent modifications
+    •	✅ Very efficient due to fine-grained locking
+    •	Instead of locking the whole map, it locks small sections (buckets)
+
+    🚫 Null keys/values
+    	•	HashMap allows:
+    	•	✅ 1 null key
+    	•	✅ Many null values
+    	•	ConcurrentHashMap does not allow null keys or values:
+
+    cmap.put(null, "value"); // ❌ throws NullPointerException
+
+
+    ✅ When to use what?
+    Use Case                                Use This
+    Single-threaded or local use            HashMap
+    Multi-threaded, high performance        ConcurrentHashMap
+    Simple thread safety (low updates)      Collections.synchronizedMap() (slower)
