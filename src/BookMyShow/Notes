@@ -1,0 +1,125 @@
+Requirements:
+    Display shows
+      1. The system should allow users to view the list of the movies playing in different theatres
+
+    Book show, display seating arrangements
+       2. The system should allow user to select a movie, theatre and show timing to book seats
+       3. The system should display the seating arrangement of the selected show and allow users to choose seats
+
+    Payment Processing and booking confirmation
+        3. The system should users to make payments and confirm their booking
+
+    Concurrent bookings and Real time update
+        4. The system should handle concurrent bookings and ensure seat availability is updated in real time
+        5. The system should be scalable to handle a large number of concurrent users and bookings
+
+    Functionality for Theatre administration
+        6. The system should allow theatre administrations to add, update, and remove movies, shows and seating arrangements.
+
+
+
+
+Entities
+
+Movie class
+    represents a movie with properties such as ID, title, description, and duration
+
+Theatre class
+    represents a theatre with properties such as ID, name, location, and a list of shows
+
+Show class (movie + theatre)
+    represents a movie show at a theatre with properties such as ID, movie, theatre, startTime, endTime, and a map of seats
+
+Seat class
+    represents a seat in a theatre with properties such as ID, row, column, type, price, and status
+
+SeatType Enum
+    define the different types of seats(normal, premium)
+
+SeatStatus Enum
+    defines the different statuses of a seat(available, booked)
+
+User class
+    represents a user with properties such as id, name, email
+
+Booking class
+    represents a booking made by a user with properties such as ID, user, show, selected seats, totalPrice, and status
+
+BookingStatus Enum
+    defines the different booking statuses (pending, confirmed, or cancelled)
+
+MovieTicketBookingSystem class
+    This is the main class which handles the movie ticket booking. It follows a singleton pattern to ensure only one instance of the system exists.
+    This class also provides methods for adding new movies, theatres, and shows as well as methods for bookTickets(), confirmBooking, cancelBooking
+        Booking bookTickets(User user, Show show, List<Seat> selectedSeats){
+            // if the selected seats are available for the given show,
+            // mark those seats not available,
+            // calculate the totalPrice for the booking,
+            // create a booking object(bookingId, user, show, totalPrice, selectedSeats, BookingStatus.Pending) and return it
+        }
+
+        void confirmBooking(String bookingId){
+            // For a booking to marked as confirmed, its status must be Pending
+            // Since we have a bookings map(bookingId --> booking obj), we will just pass bookingId as parameter and then get the corresponding booking obj from the bookings map
+            // passing the bookingId as parameter is more efficient than passing the whole booking obj
+            // process payment and if it's succussfull(haven't implemented this step), mark the booking status to confirmed
+        }
+
+        void cancelBooking(String bookingId){
+            // for the same reason as above, just passed bookingId as parameter and then extract booking using that id
+            // only those bookings aer eligible for cancellation whose status is not cancelled(which means it is either pending or confirmed)
+            // update the booking status, mark the seat selected seats (as part of that booking and show) as available again
+            // and issue refund(not implemented yet!)
+        }
+
+
+MovieTicketBookingSystemDemo class
+    this class is the entry point of the application and demonstrates the usage of the movie ticket booking system by adding movies, theatres, shows, booking tickets
+
+GeneratingBookingID;
+    We need to generate a booking Id for each booking that is made and the requirement is it should be unique
+    How do we guarantee uniqueness?
+        We'll use a combination of timestamp and booking counter
+        At first glance, it may seem that a timestamp is enough to guarantee uniqueness. But in real-world systems, using a counter alongside a timestamp helps avoid subtle but dangerous bugs, especially under high load or in multithreaded environments.
+
+        Here’s why the booking counter is needed even when using a timestamp:
+        1. Timestamp Precision is Limited
+        	•	The timestamp in your example goes up to seconds (format: yyyyMMddHHmmss).
+        	•	If multiple bookings happen within the same second, the timestamp will be identical.
+        	•	Without a counter, you’d generate the same ID, causing collisions.
+
+        2. The Counter Adds Entropy (Uniqueness)
+        	•	The counter (000001, 000002, etc.) differentiates requests within the same timestamp.
+        	•	This ensures that every booking ID is unique, even if many are generated in the same second.
+
+        If your timestamp goes down to milliseconds or nanoseconds, uniqueness improves:
+        But:
+        	•	Milliseconds might still not be fast enough for high-throughput systems.
+        	•	It’s harder to read and debug.
+        	•	Still not foolproof under high concurrency.
+
+        🛠️ In short:
+        	The counter ensures uniqueness. The timestamp adds traceability. Combined, they’re reliable and safe.
+
+        ✅ Benefits of This Approach:
+        	•	Thread-safe due to AtomicLong
+        	•	Time-stamped, so you know when the ID was created
+        	•	Readable and traceable
+        	•	Guaranteed uniqueness unless two are created in the same second and counter rolls over, which is unlikely due to the incrementing ID
+
+
+        bookingCounter is likely an AtomicLong, which provides thread-safe incrementing.
+        	•	incrementAndGet() increments the counter and returns the new value.
+        	•	This ensures that each ID is unique even in multithreaded environments.
+
+        	LocalDateTime.now() gets the current date and time.
+        	•	DateTimeFormatter.ofPattern("yyyyMMddHHmmss") formats it like:
+        20250503143201 → (year-month-day-hour-minute-second)
+        	•	This timestamp helps prevent collisions and also makes the ID time-trackable.
+
+            String.format("%06d", bookingNumber) converts the booking number to a 6-digit string, padded with leading zeroes if needed.
+
+
+NOTE: Multithreading is acheived using concurrent data structures such as ConcurrentHashMap to handle concurrent access to shared resources like seats etc
+
+
