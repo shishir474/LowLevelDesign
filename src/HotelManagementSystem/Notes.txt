@@ -1,0 +1,76 @@
+Hotel Management System {Booking.com / Agoda}
+
+Functional Requirements:
+    1. The system should allow guests to book rooms, check-in and check-out.
+    2. The system should handle different types of rooms like Single, Double, Deluxe, and Suite
+    3. The system should handle room availability and reservation status
+    4. The system should allow the hotel staff to manage guest information, room assignments and billings
+    5. The system should support different payment modes like cash, credit card, and online payment
+Non Funtional Requirements:
+    1. The system should be scalable and handle a large no of users
+    2. The system should support concurrent bookings and ensure data consistency.
+    3. The system should provide reporting and analytics feature for hotel management
+
+
+Entities:
+    1. Room
+    1.1 RoomStatus {Enum} -- [Available, Booked, Occupied]
+    1.2 RoomType {Enum} -- [Single, Double, Deluxe, Suite]
+    2. User/Guest
+    3. Reservation
+    3.1. ReservationStatus {Enum} -- [Pending, Confirmed, Cancelled]
+    4. HotelManagementSystem  -- core class
+    5. HotelManagementSystemDemo
+    6. Payment {Interface}
+
+    Room
+        -- Room class represents a room in the hotel
+        -- properties: roomId, roomType, roomStatus, price
+        -- methods: book(), checkIn(), checkOut()
+
+
+
+
+
+    Guest
+        -- Guest class represents a guest of the hotel
+        -- properties: guestId, name, email, phoneNo
+
+    Reservation:
+        -- Reservation class represents a reservation made by a guest for a specific room and date range.
+        -- properties: reservationId, room , guest, checkIndate, checkOutDate, status
+
+    Payment
+        -- Payment interface defines the contract for processing payments. It is implemented by concrete payment classes like CreditCardPayment and CashPayment
+
+    HotelManagementSystem
+        -- HotelManagementSystem is the central component of your application. It follows Singleton pattern to ensure only single instance of the system exists
+        -- provides methods to add guests and rooms, book rooms / makeReservation, cancelReservation, checkIn, checkOut, and processPayments
+        -- Handles concurrent access to shared resources using synchronization
+
+        -- while making reservation, we check the room's status(it should be available). If yes, invoke book() of room -- it will change the status of room from Available --> Booked
+                -- in order to book a room, it's status should be Available. If yes then change the status to booked, else throw error stating room not available
+                -- create a reservation and insert the entry into the reservations map
+
+        -- checkIn
+        We'll do a checkin for a specific reservation. The reservation should be a valid one and it's status should be Confirmed. If both conditions hold true
+        do a checkin --> reservation.getRoom().checkIn()
+
+        -- checkOut
+            first check if the reservation is valid and it's status is Confirmed, calculate the total based on the room's price and no of days guest stayed
+            process payment and once payment has been processed successfully, checkout room and remove the reservation entry from reservations map
+
+       -- cancel reservation(String reservationID)
+          first check if the reservation is a valid one and its status is Confirmed
+          call cancel() of reservation class to cancel the reservation
+                cancel() will check if the status of reservation is Confirmed. If yes perform room checkOut and change the reservation Status to Cancelled
+          remove the reservation from the reservations map
+
+
+    HotelManagementSystemDemo
+        -- HotelMangementSystemDemo class demonstrates the usage of the Hotel management system by creating guests, rooms, making reservations, checking in , checking out and cancelling reservations
+
+
+Note:
+    -- Package Name in Java should only contain lowercase letters
+    -- Enum values are always in upper case
